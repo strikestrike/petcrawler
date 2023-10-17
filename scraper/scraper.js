@@ -24,10 +24,10 @@ async function startScraping() {
 
         for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
             // Extract the details for each pet listing on the current page
-            const petListings = await page.$$('.card_divide');
+            const cardLinks = await page.$$('.animalSearchBody .grid-col a.petCard-link');
 
-            for (const listing of petListings) {
-                const animalLink = await listing.evaluate((element) => element.getAttribute('href'));
+            for (const card of cardLinks) {
+                const animalLink = await card.evaluate((element) => element.getAttribute('href'));
                 console.log('Animal Link:', animalLink);
 
                 // Pass the animal detail page URL to the scraping function
@@ -55,47 +55,62 @@ async function scrapePetDetails(url) {
         await page.goto(url);
 
         // Wait for the pet listings to load
-        await page.waitForSelector('.card_divide');
+        await page.waitForSelector('.site-main');
 
-        // Extract the details for each pet listing
-        const petListings = await page.$$('.card_divide');
-
-        for (const listing of petListings) {
-            const name = await listing.$('.Pet_Name');
-            const location = await listing.$('.Pet_Location');
-            const breed = await listing.$('.Pet_Breeds');
-            const age = await listing.$('[data-test="Pet_Age"]');
-            const sex = await listing.$('[data-test="Pet_Sex"]');
-            const description = await listing.$('[data-test="Pet_Story_Section"] .u-vr4x');
-
-            const animalId = await listing.$('[role="main"] pfdc-pet-carousel').getAttribute('animal-id');
-            const email = await listing.$('[href^="mailto:"]').evaluate((el) => el.innerText);
-
-            // Extract the text content
-            const nameText = await (await name.getProperty('textContent')).jsonValue();
-            const locationText = await (await location.getProperty('textContent')).jsonValue();
-            const breedText = await (await breed.getProperty('textContent')).jsonValue();
-            const ageText = await (await age.getProperty('textContent')).jsonValue();
-            const sexText = await (await sex.getProperty('textContent')).jsonValue();
-            const descriptionText = await (await description.getProperty('textContent')).jsonValue();
-            const emailText = email.trim();
-
-            // Save the data to the database or process it as needed
-            const data = {
-                name: nameText.trim(),
-                location: locationText.trim(),
-                breed: breedText.trim(),
-                age: ageText.trim(),
-                sex: sexText.trim(),
-                description: descriptionText.trim(),
-                animalId,
-                email: emailText,
-            };
-
-            console.log('Scraped Data:', data);
-
-            await saveToDatabase(data);
+        // Extract the image link
+        let photolinks = '';
+        const petCarousel = await page.$('.petCarousel-body img');
+        if (petCarousel) {
+            const imgSrcSet = await petCarousel.evaluate((element) => element.getAttribute('srcset'));
+            if (imgSrcSet) {
+                // Split the srcset string and extract the URLs
+                const imgUrls = imgSrcSet.split(', ').map((src) => src.split(' ')[1]);
+                
+                // Join the URLs with commas to create the combined string
+                photolinks = imgUrls.join(', ');
+                
+                console.log('Combined URLs:', combinedUrls);
+            }
         }
+
+        // Extract the details
+        const detailCard = await page.$$('.card_divide');
+
+        const name = await detailCard.$('.Pet_Name');
+        const location = await detailCard.$('.Pet_Location');
+        const breed = await detailCard.$('.Pet_Breeds');
+        const age = await detailCard.$('[data-test="Pet_Age"]');
+        const sex = await detailCard.$('[data-test="Pet_Sex"]');
+        const description = await detailCard.$('[data-test="Pet_Story_Section"] .u-vr4x');
+
+        const animalId = await detailCard.$('[role="main"] pfdc-pet-carousel').getAttribute('animal-id');
+        const email = await detailCard.$('[href^="mailto:"]').evaluate((el) => el.innerText);
+
+        // Extract the text content
+        const nameText = await (await name.getProperty('textContent')).jsonValue();
+        const locationText = await (await location.getProperty('textContent')).jsonValue();
+        const breedText = await (await breed.getProperty('textContent')).jsonValue();
+        const ageText = await (await age.getProperty('textContent')).jsonValue();
+        const sexText = await (await sex.getProperty('textContent')).jsonValue();
+        const descriptionText = await (await description.getProperty('textContent')).jsonValue();
+        const emailText = email.trim();
+
+        // Save the data to the database or process it as needed
+        const data = {
+            name: nameText.trim(),
+            location: locationText.trim(),
+            breed: breedText.trim(),
+            age: ageText.trim(),
+            sex: sexText.trim(),
+            description: descriptionText.trim(),
+            animalId,
+            email: emailText,
+            photolinks: photolinks
+        };
+
+        console.log('Scraped Data:', data);
+
+        await saveToDatabase(data);
     } catch (error) {
         console.error('An error occurred:', error);
     } finally {
