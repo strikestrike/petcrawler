@@ -122,19 +122,19 @@ async function scrapePetDetails(url) {
 
         // Save the data to the database or process it as needed
         const data = {
-            name: nameText.trim(),
-            type: petType.trim(),
-            owner: ownerText.trim(),
-            location: locationText.trim(),
-            breeds: breedsText.trim(),
-            age: ageText.trim(),
-            sex: sexText.trim().toLowerCase(),
-            size: grownSizeText.trim(),
-            color: colorText.trim(),
-            story: storyText.trim(),
-            animalId: animalIdText.trim(),
-            email: emailText.trim(),
-            phone: phoneText.trim(),
+            name: nameText ? nameText.trim() : null,
+            type: petType ? petType.trim() : null,
+            owner: ownerText ? ownerText.trim() : null,
+            location: locationText ? locationText.trim() : null,
+            breeds: breedsText ? breedsText.trim() : null,
+            age: ageText ? ageText.trim() : null,
+            sex: sexText ? sexText.trim().toLowerCase() : null,
+            size: nameText ? grownSizeText.trim() : null,
+            color: colorText ? colorText.trim() : null,
+            story: storyText ? storyText.trim() : null,
+            animalId: animalIdText ? animalIdText.trim() : null,
+            email: emailText ? emailText.trim() : null,
+            phone: phoneText ? phoneText.trim() : null,
             photolinks: photolinks,
         };
 
