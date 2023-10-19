@@ -13,6 +13,8 @@ async function startScraping() {
 
             // Wait for the pagination control to load
             await page.waitForSelector('#page-select .animalSearchSelect-customSelect-btn .m-txt_ellipsisOverflow');
+            // Wait for the 'Infinity' part to change to an integer
+            await page.waitForFunction('document.querySelector("#page-select .animalSearchSelect-customSelect-btn .m-txt_ellipsisOverflow").textContent.match(/PAGE (\\d+)\\/(\\d+)/)');
 
             // Extract the total number of pages
             const totalPagesText = await page.$eval('#page-select .animalSearchSelect-customSelect-btn .m-txt_ellipsisOverflow', (element) => {
@@ -20,6 +22,7 @@ async function startScraping() {
             });
 
             // Parse the total number of pages from the text
+            console.log(totalPagesText);
             const totalPagesMatch = totalPagesText.match(/PAGE (\d+)\/(\d+)/);
             const currentPage = parseInt(totalPagesMatch[1]);
             const totalPages = parseInt(totalPagesMatch[2]);
@@ -27,7 +30,7 @@ async function startScraping() {
             for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
                 // Extract the details for each pet listing on the current page
                 const cardLinks = await page.$$('.animalSearchBody .grid-col a.petCard-link');
-
+                console.log('cards count: ', cardLinks.length);
                 for (const card of cardLinks) {
                     const animalLink = await card.evaluate((element) => element.getAttribute('href'));
                     console.log('Animal Link:', animalLink);
@@ -40,6 +43,7 @@ async function startScraping() {
                 if (currentPage < totalPages) {
                     await page.click('.animalSearchFooter .m-fieldBtn_iconRt');
                     await page.waitForNavigation();
+                    console.log('CurrentPage: ', currentPage);
                 }
             }
         }
