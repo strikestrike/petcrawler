@@ -82,7 +82,6 @@ async function scrapePetDetails(url) {
                 photolinks = photolinks + (photolinks != '' ? ',' : '') + imgSrc;
             }
         }
-        console.log('photolinks:', photolinks);
 
         // Extract the details
         const detailCard = await page.$('.card_divide');
