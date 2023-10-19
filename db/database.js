@@ -1,16 +1,24 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
+const { createPool } = require('generic-pool');
 const config = require('../scraper/config');
 
-// Create a MySQL database connection
-const connection = mysql.createConnection(config.dbConnection);
-
-// Connect to the database
-connection.connect((error) => {
-    if (error) {
-        console.error('Error connecting to the MySQL database:', error);
-    } else {
-        console.log('Connected to the MySQL database.');
-    }
+// Create a connection pool
+const pool = createPool({
+    create: async () => {
+        const connection = await mysql.createConnection(config.dbConnection);
+        return connection;
+    },
+    destroy: (connection) => {
+        connection.end(); // Properly end the connection
+    },
 });
 
-module.exports = connection;
+module.exports = {
+    getConnection: async () => {
+        const connection = await pool.acquire();
+        return connection;
+    },
+    release: (connection) => {
+        pool.release(connection);
+    },
+};
