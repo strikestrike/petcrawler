@@ -152,7 +152,7 @@ async function saveToDatabase(data) {
         const conn = await db.getConnection();
 
         await conn.execute('INSERT INTO pets (type, owner, name, location, breeds, age, sex, size, color, story, animal_id, email, phone, photos, url, created_at) \
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())', [
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, NOW())', [
             data.type,
             data.owner,
             data.name,
