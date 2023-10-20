@@ -136,6 +136,7 @@ async function scrapePetDetails(url) {
             email: emailText ? emailText.trim() : null,
             phone: phoneText ? phoneText.trim() : null,
             photolinks: photolinks,
+            url: url,
         };
 
         await saveToDatabase(data);
@@ -150,7 +151,7 @@ async function saveToDatabase(data) {
     try {
         const conn = await db.getConnection();
 
-        await conn.execute('INSERT INTO pets (type, owner, name, location, breeds, age, sex, size, color, story, animal_id, email, phone, photos, created_at) \
+        await conn.execute('INSERT INTO pets (type, owner, name, location, breeds, age, sex, size, color, story, animal_id, email, phone, photos, url, created_at) \
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())', [
             data.type,
             data.owner,
@@ -166,6 +167,7 @@ async function saveToDatabase(data) {
             data.email,
             data.phone,
             data.photolinks,
+            data.url
         ]);
         console.log('Data saved to the database.');
 
