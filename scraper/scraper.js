@@ -24,10 +24,12 @@ async function startScraping() {
             // Parse the total number of pages from the text
             console.log(totalPagesText);
             const totalPagesMatch = totalPagesText.match(/PAGE (\d+)\/(\d+)/);
-            const currentPage = parseInt(totalPagesMatch[1]);
+            const startPage = parseInt(totalPagesMatch[1]);
             const totalPages = parseInt(totalPagesMatch[2]);
 
-            for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
+            for (let currentPage = startPage; currentPage <= totalPages; currentPage++) {
+                // await page.screenshot({path: './screenshot_' + currentPage + '.png'});
+		        console.log('CurrentPage: ', currentPage);
                 // Extract the details for each pet listing on the current page
                 const cardLinks = await page.$$('.animalSearchBody .grid-col a.petCard-link');
                 console.log('cards count: ', cardLinks.length);
@@ -43,7 +45,6 @@ async function startScraping() {
                 if (currentPage < totalPages) {
                     await page.click('.animalSearchFooter .m-fieldBtn_iconRt');
                     await page.waitForNavigation();
-                    console.log('CurrentPage: ', currentPage);
                 }
             }
         }
